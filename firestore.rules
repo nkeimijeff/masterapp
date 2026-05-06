@@ -1,0 +1,88 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) 
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data 
+        : null;
+    }
+
+    function isRole(role) {
+      return isSignedIn() && (
+        (getUserData() != null && getUserData().role == role) || 
+        (request.auth.token.email in ['jefftchatchoua068@gmail.com', 'nkeimi069@gmail.com'] && role == 'SUPER_ADMIN')
+      );
+    }
+
+    function isOneOfRoles(roles) {
+      return isSignedIn() && (
+        (getUserData() != null && getUserData().role in roles) || 
+        (request.auth.token.email in ['jefftchatchoua068@gmail.com', 'nkeimi069@gmail.com'] && 'SUPER_ADMIN' in roles)
+      );
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isOneOfRoles(['SUPER_ADMIN', 'DG', 'CZ', 'CT', 'CC', 'EMPLOYEE']));
+      allow create: if isSignedIn() && (
+        request.auth.uid == userId || 
+        isOneOfRoles(['SUPER_ADMIN', 'DG']) ||
+        (isOneOfRoles(['CZ', 'CT', 'CC']) && request.resource.data.role == 'EMPLOYEE' && request.resource.data.managerId == request.auth.uid) ||
+        (isRole('EMPLOYEE') && request.resource.data.role == 'INTERN' && request.resource.data.managerId == request.auth.uid)
+      );
+      allow update: if isSignedIn() && (
+        request.auth.uid == userId || 
+        isOneOfRoles(['SUPER_ADMIN', 'DG']) ||
+        (isOneOfRoles(['CZ', 'CT', 'CC']) && resource.data.role == 'EMPLOYEE' && resource.data.managerId == request.auth.uid) ||
+        (isRole('EMPLOYEE') && resource.data.role == 'INTERN' && resource.data.managerId == request.auth.uid)
+      );
+      allow delete: if isSignedIn() && (
+        isOneOfRoles(['SUPER_ADMIN', 'DG']) ||
+        (isOneOfRoles(['CZ', 'CT', 'CC']) && resource.data.role == 'EMPLOYEE' && resource.data.managerId == request.auth.uid) ||
+        (isRole('EMPLOYEE') && resource.data.role == 'INTERN' && resource.data.managerId == request.auth.uid)
+      );
+    }
+
+    // Products collection
+    match /products/{productId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isOneOfRoles(['SUPER_ADMIN', 'DG', 'CZ', 'CT', 'CC', 'EMPLOYEE']);
+    }
+
+    // Clients collection
+    match /clients/{clientId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isOneOfRoles(['SUPER_ADMIN', 'DG', 'CC']);
+    }
+
+    // Suppliers collection
+    match /suppliers/{supplierId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isOneOfRoles(['SUPER_ADMIN', 'DG', 'CZ']);
+    }
+
+    // Movements collection (Logs)
+    match /movements/{movementId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isRole('SUPER_ADMIN');
+    }
+
+    // Notifications collection (Admin only)
+    match /notifications/{notifId} {
+      allow read, update, delete: if isRole('SUPER_ADMIN');
+      // Allow any user to trigger a notification (system events)
+      allow create: if isSignedIn();
+    }
+  }
+}

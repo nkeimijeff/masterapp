@@ -1,0 +1,126 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "User profile with role-based access and hierarchy",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "role": { "type": "string" },
+        "tempPass": { "type": "string" },
+        "managerId": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["uid", "name", "email", "role", "createdAt"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Inventory product",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "quantity": { "type": "number" },
+        "buyPrice": { "type": "number" },
+        "sellPrice": { "type": "number" },
+        "alertLevel": { "type": "number" },
+        "supplierName": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "status": { "type": "string", "enum": ["available", "low", "out_of_stock"] }
+      },
+      "required": ["id", "name", "quantity", "buyPrice", "sellPrice", "alertLevel", "supplierName", "createdAt", "updatedAt", "status"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "Customer information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "location": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "name", "email", "phone", "location", "createdAt"]
+    },
+    "Supplier": {
+      "title": "Supplier",
+      "description": "Vendor information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "location": { "type": "string" },
+        "relatedArticles": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "name", "email", "phone", "location", "createdAt"]
+    },
+    "StockMovement": {
+      "title": "Stock Movement",
+      "description": "Record of stock entries and exits",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "productId": { "type": "string" },
+        "productName": { "type": "string" },
+        "quantity": { "type": "number" },
+        "type": { "type": "string", "enum": ["IN", "OUT"] },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["productId", "productName", "quantity", "type", "createdAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "System notifications for admins",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "object" }
+      },
+      "required": ["title", "message", "type", "read", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles"
+    },
+    "products/{productId}": {
+      "schema": "Product",
+      "description": "Stock items"
+    },
+    "clients/{clientId}": {
+      "schema": "Client",
+      "description": "Customer records"
+    },
+    "suppliers/{supplierId}": {
+      "schema": "Supplier",
+      "description": "Vendor records"
+    },
+    "movements/{movementId}": {
+      "schema": "StockMovement",
+      "description": "Stock transaction history"
+    },
+    "notifications/{notifId}": {
+      "schema": "Notification",
+      "description": "Admin notifications"
+    }
+  }
+}

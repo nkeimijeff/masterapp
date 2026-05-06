@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: gim-stock-php
+    runtime: php
+    buildCommand: composer install
+    startCommand: apache2-foreground
+    envVars:
+      - key: PHP_VERSION
+        value: 8.2
